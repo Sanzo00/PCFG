@@ -12,11 +12,7 @@
 
 2、根据训练集统计每个密码不同部分出现的频率：
 
-<<<<<<< HEAD
 ![](http://latex.codecogs.com/svg.latex?\begin{aligned}password&=hel\$\$66\\\\P(password)&=P(L_3S_2D_3)*P(hel)*P(\$\$)*P(666);\end{aligned})
-=======
-![](http://latex.codecogs.com/svg.latex?\begin{aligned}password &= hel\$\$66\\\\P(password)&=P(L_3S_2D_3)*P(hel)*P(\$\$)*P(666);\end{aligned})
->>>>>>> 9562e8ba797b83bfb4ff11f76b917d4b7cdabd3c
 
 3、对于测试集合，得到对应的密码格式($$LDS$$)，使用优先队列存储当前猜测的密码，每次取出概率最高的密码，然后判断是否猜中，如果没有猜中进行转移。
 
