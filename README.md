@@ -1,25 +1,19 @@
 ## PCFG介绍
 
-$$PCFG$$是一种基于经典统计学的口令猜测算法，论文中描述其性能比使用默认规则集的John the Ripper能多破解$$ 28\%-129\% $$的密码。
+![](http://latex.codecogs.com/svg.latex?PCFG)是一种基于经典统计学的口令猜测算法，论文中描述其性能比使用默认规则集的John the Ripper能多破解![](http://latex.codecogs.com/svg.latex?28\%-129\%)的密码。
 
 
 
 ## PCFG算法思想
 
-PCFG的过程大概是：
+![](http://latex.codecogs.com/svg.latex?PCFG)的过程大概是：
 
-1、每种密码可以使用LDS的方式表示，例如$$hel\$\$666$$，可以表示为$$L_3S_2D_3$$
+1、每种密码可以使用![](http://latex.codecogs.com/svg.latex?LDS)的方式表示，例如![](http://latex.codecogs.com/svg.latex?hel\$\$666)，可以表示为![](http://latex.codecogs.com/svg.latex?L_3S_2D_3)
 
 2、根据训练集统计每个密码不同部分出现的频率：
-$$
-\begin{aligned}
 
-password &= hel\$\$666 \\
+![](http://latex.codecogs.com/svg.latex?\begin{aligned}password &= hel\$\$66\\\\P(password)&=P(L_3S_2D_3)*P(hel)*P(\$\$)*P(666);\end{aligned})
 
-P(password) &= P(L3S2D3) * P(hel) * P($$) * P(666);
-
-\end{aligned}
-$$
 3、对于测试集合，得到对应的密码格式($$LDS$$)，使用优先队列存储当前猜测的密码，每次取出概率最高的密码，然后判断是否猜中，如果没有猜中进行转移。
 
 
