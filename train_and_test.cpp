@@ -33,12 +33,14 @@ struct pNode{
 struct Node{
     string s;
     string lds;
-    int pos;
     int pivot;
     double p;
     vector<int> idx;
-    bool operator< (const Node &t) const{
-        return p - t.p < 1e-10;
+};
+
+struct cmp{
+    bool operator () (Node* &a, Node* &b) const{
+        return a->p - b->p < 1e-10;
     }
 };
 
@@ -51,8 +53,8 @@ string getLDS(string s, int flag);
 
 void initVec();
 int getNum(string &s, int i, int len);
-Node getFirstNode(string lds);
-void getNextNode(priority_queue<Node> &que, Node& f);
+Node* getFirstNode(string lds);
+void getNextNode(priority_queue<Node*, vector<Node*>, cmp> &que, Node* f);
 void train(); // 获得训练集
 void getTestData(); // 读取测试集
 void test(); // 测试
@@ -119,7 +121,6 @@ string getLDS(string s, int flag) {
     }
     return ret;
 }
-
 
 // 初始化每个概率
 void initVec() {
@@ -192,7 +193,7 @@ int getNum(string &s, int i, int len) {
     return num;
 }
 
-Node getFirstNode(string lds) {
+Node* getFirstNode(string lds) {
     if (produced % 100 == 0) {
         ofs_XY << produced << "," <<  cracked << endl;
     }
@@ -217,69 +218,71 @@ Node getFirstNode(string lds) {
             p *= vecS[num][0].p;
         }
     }
-    Node tmp;
-    tmp.idx = idx;
-    tmp.p = p;
-    tmp.s = s;
-    tmp.lds = lds;
-    tmp.pivot = 0;
-    tmp.pos = 0;
+    Node* tmp = new Node;
+    tmp->idx = idx;
+    tmp->p = p;
+    tmp->s = s;
+    tmp->lds = lds;
+    tmp->pivot = 0;
     return tmp;
 }
 
-void getNextNode(priority_queue<Node> &que, Node& f) {
-    int k = f.pos-1;
-    for (int i = f.pivot; i < (int)f.idx.size(); ++i) {
-        int idx = f.idx[i];
-        while (isdigit(f.lds[++k]));
-        int num = getNum(f.lds, k+1, f.lds.size());
-        char c = f.lds[k];
+void getNextNode(priority_queue<Node*, vector<Node*>, cmp> &que, Node* f) {
+    int k = 0;
+    for (int i = 0; i < f->pivot; ++i) {
+        while (isdigit((f->lds)[++k]));
+    }
+    k--;
+    for (int i = f->pivot; i < (int)(f->idx).size(); ++i) {
+        int idx = (f->idx)[i];
+        while (isdigit((f->lds)[++k]));
+        int num = getNum(f->lds, k+1, (f->lds).size());
+        char c = (f->lds)[k];
         if (c == 'L' && (int)vecL[num].size() == idx) continue;
         else if (c == 'D' && (int)vecD[num].size() == idx) continue;
         else if (c == 'S' && (int)vecS[num].size() == idx) continue;
-        Node tmp;
-        tmp.lds = f.lds;
-        tmp.p = f.p;
+        Node *tmp = new Node;
+        tmp->lds = f->lds;
+        tmp->p = f->p;
         if (c == 'L') {
-            tmp.p /= vecL[num][idx-1].p;
-            tmp.p *= vecL[num][idx].p;
+            tmp->p /= vecL[num][idx-1].p;
+            tmp->p *= vecL[num][idx].p;
         }else if (c == 'D') {
-            tmp.p /= vecD[num][idx-1].p;
-            tmp.p *= vecD[num][idx].p;
+            tmp->p /= vecD[num][idx-1].p;
+            tmp->p *= vecD[num][idx].p;
         }else {
-            tmp.p /= vecS[num][idx-1].p;
-            tmp.p *= vecS[num][idx].p;
+            tmp->p /= vecS[num][idx-1].p;
+            tmp->p *= vecS[num][idx].p;
         }
-        tmp.idx = f.idx;
-        tmp.idx[i]++;
+        tmp->idx = f->idx;
+        tmp->idx[i]++;
         string s;
         int kk = -1;
 
-        for (int j = 0; j < (int)f.idx.size(); j++) {
-            while (isdigit(f.lds[++kk]));
-            num = getNum(f.lds, kk+1, f.lds.size());
-            if (tmp.lds[kk] == 'L') s += vecL[num][tmp.idx[j]-1].s;
-            else if (tmp.lds[kk] == 'D') s += vecD[num][tmp.idx[j]-1].s;
-            else s += vecS[num][tmp.idx[j]-1].s;
+        for (int j = 0; j < (int)(f->idx).size(); j++) {
+            while (isdigit((f->lds)[++kk]));
+            num = getNum(f->lds, kk+1, (f->lds).size());
+            if ((tmp->lds)[kk] == 'L') s += vecL[num][(tmp->idx)[j]-1].s;
+            else if ((tmp->lds)[kk] == 'D') s += vecD[num][(tmp->idx)[j]-1].s;
+            else s += vecS[num][(tmp->idx)[j]-1].s;
         }
-        tmp.s = s;
-        tmp.pivot = i;
-        tmp.pos = k;
+        tmp->s = s;
+        tmp->pivot = i;
         que.push(tmp);
         produced++;
         if (produced % 1000 == 0) {
             ofs_XY << produced << "," <<  cracked << endl;
         }
         if (produced % 1000000 == 0) {
-            cout << produced/1000000 << " millions has produced, " << cracked << " has cracked!" << endl;
+            cout << produced/1000000 << " millions has produced, " << cracked << " has cracked!" << " que.size: " << que.size() << " memory: " << que.size()*sizeof(Node*)/1000000.0 << "M top().p: " << que.top()->p << endl;;
         }
         if (produced >= max_guesses) return;
     }
 }
 
+// 获取一共可以破解的数量
 void test1() {
     cout << Test.size() << " test data start testing..." << endl;
-
     for (auto s : Test) {
         char c = getC(s[0]);
         string t;
@@ -314,30 +317,28 @@ void test1() {
 
 // 测试
 void test() {
-
-    // test1();
-    // cout << "crack_all size : " << cracked_all.size() << endl;
-
-    ofs_XY.open("XY1.txt", ios::out);
+    ofs_XY.open("XY.txt", ios::out);
     cout << Test.size() << " test data start testing..." << endl;
-    priority_queue<Node> que;
+    // priority_queue<Node> que;
+    priority_queue<Node*, vector<Node*>, cmp> que;
 
     for (auto it : Train) {
         if (LDS.find(it) == LDS.end()) continue;
-        Node tmp = getFirstNode(it);
+        Node *tmp = getFirstNode(it);
         produced++;
         que.push(tmp);
     }
 
     while (!que.empty() && !Test.empty()) {
-        Node f = que.top();
+        Node *f = que.top();
         que.pop();
 
-        if (Test.count(f.s)) {
+        if (Test.count(f->s)) {
             cracked++;
-            Test.erase(f.s);
+            Test.erase(f->s);
         }
         if (produced < max_guesses) getNextNode(que, f);
+        delete f;
     }
 
     cout << "done!" << endl;
