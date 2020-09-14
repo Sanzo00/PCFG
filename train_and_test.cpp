@@ -5,7 +5,7 @@ using namespace std;
     P(s) = P(L3S2D3) * P(hel) * P($$) * P(666);
 */
 const int N = 10000;
-const int max_guesses = 10 * 1e6;
+const int max_guesses = 1e9;
 unordered_map<string, int> LDS;
 unordered_map<string, int> L;
 unordered_map<string, int> D;
@@ -15,6 +15,7 @@ unordered_map<int, int> cntL;
 unordered_map<int, int> cntD;
 unordered_map<int, int> cntS;
 unordered_set<string> Test;
+unordered_set<string> Train;
 unordered_set<string> cracked_all;
 
 int produced;
@@ -25,19 +26,19 @@ struct pNode{
     string s;
     double p;
     bool operator< (const pNode &t) const{
-        return p - t.p > 1e-5;
+        return p - t.p > 1e-10;
     }
 };
 
 struct Node{
     string s;
     string lds;
-    int idx_lds;
+    int pos;
     int pivot;
     double p;
     vector<int> idx;
     bool operator< (const Node &t) const{
-        return p - t.p < 1e-5;
+        return p - t.p < 1e-10;
     }
 };
 
@@ -163,6 +164,7 @@ void train() {
         string s = getLDS(buf, true);
         LDS[s]++;
         cntLDS[(int)s.size()]++;
+        Train.insert(s);
     }
     ifs.close();
     initVec();
@@ -221,12 +223,12 @@ Node getFirstNode(string lds) {
     tmp.s = s;
     tmp.lds = lds;
     tmp.pivot = 0;
-    tmp.idx_lds = 0;
+    tmp.pos = 0;
     return tmp;
 }
 
 void getNextNode(priority_queue<Node> &que, Node& f) {
-    int k = f.idx_lds-1;
+    int k = f.pos-1;
     for (int i = f.pivot; i < (int)f.idx.size(); ++i) {
         int idx = f.idx[i];
         while (isdigit(f.lds[++k]));
@@ -262,12 +264,13 @@ void getNextNode(priority_queue<Node> &que, Node& f) {
         }
         tmp.s = s;
         tmp.pivot = i;
-        tmp.idx_lds = k;
+        tmp.pos = k;
         que.push(tmp);
+        produced++;
         if (produced % 1000 == 0) {
             ofs_XY << produced << "," <<  cracked << endl;
         }
-        if (++produced % 1000000 == 0) {
+        if (produced % 1000000 == 0) {
             cout << produced/1000000 << " millions has produced, " << cracked << " has cracked!" << endl;
         }
         if (produced >= max_guesses) return;
@@ -311,39 +314,32 @@ void test1() {
 
 // 测试
 void test() {
-    ofs_XY.open("XY.txt", ios::out);
 
     // test1();
     // cout << "crack_all size : " << cracked_all.size() << endl;
+
+    ofs_XY.open("XY1.txt", ios::out);
     cout << Test.size() << " test data start testing..." << endl;
-    unordered_set<string> st;
     priority_queue<Node> que;
 
-    for (auto it : Test) st.insert(getLDS(it, false));
-    for (auto it : st) {
+    for (auto it : Train) {
         if (LDS.find(it) == LDS.end()) continue;
         Node tmp = getFirstNode(it);
         produced++;
         que.push(tmp);
     }
 
-    unordered_set<string> crack_st;
-    int start = 0;
     while (!que.empty() && !Test.empty()) {
         Node f = que.top();
         que.pop();
-        if (f.p * 1e9 < 1) continue;
+
         if (Test.count(f.s)) {
             cracked++;
-            crack_st.insert(f.s);
-
+            Test.erase(f.s);
         }
-        getNextNode(que, f);
-        if (produced >= max_guesses) break;
-        ++start;
+        if (produced < max_guesses) getNextNode(que, f);
     }
 
-    // cout << "crack_st size: " << crack_st.size() << " " << cracked << endl;
     cout << "done!" << endl;
     ofs_XY.close();
 }
