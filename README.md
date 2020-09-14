@@ -1,24 +1,22 @@
 ## PCFG介绍
 
-![](http://latex.codecogs.com/svg.latex?PCFG)是一种基于经典统计学的口令猜测算法，论文中描述其性能比使用默认规则集的John the Ripper能多破解![](http://latex.codecogs.com/svg.latex?28\%-129\%)的密码。
+PCFG是一种基于经典统计学的口令猜测算法，论文中描述其性能比使用默认规则集的John the Ripper能多破解28%-129%的密码。
 
 
 
-## PCFG算法思想
+## PCFG算法过程
 
-![](http://latex.codecogs.com/svg.latex?PCFG)的过程大概是：
-
-1、每种密码可以使用![](http://latex.codecogs.com/svg.latex?LDS)的方式表示，例如![](http://latex.codecogs.com/svg.latex?hel\$\$666)，可以表示为![](http://latex.codecogs.com/svg.latex?L_3S_2D_3)
+1、每种密码可以使用LDS的方式表示，例如hel\$\$666，可以表示为![](http://latex.codecogs.com/svg.latex?L_3S_2D_3)
 
 2、根据训练集统计每个密码不同部分出现的频率：
 
 ![](img/公式.jpg)
 
-3、对于测试集合，得到对应的密码格式(![](http://latex.codecogs.com/svg.latex?LDS))，使用优先队列存储当前猜测的密码，每次取出概率最高的密码，然后判断是否猜中，如果没有猜中进行转移。
+3、得到train set之后，将所有的LDS放到优先队列中生成对应的guess，最后将生成的guesses和test set进行对比，得到最后的破解率。
 
 
 
-## PCFG的具体实现
+## 代码的运行效果
 
 1、运行split_train_test.cpp根据myspace.txt字典文件，首先清洗掉带有不可见的字符的密码，然后随机生成训练集myspace_train.txt和测试集myspace_test.txt
 
@@ -34,13 +32,7 @@
 
 
 
-## 实现中的问题和缺点
+## 问题和解决方法
 
-1、因为电脑性能的原因，这里只生成了10Millions的guesses。
-
-2、不知道是不是字典的问题，我使用的myspace.txt中的密码只有37144，论文中的是67042个，去除字典中的一些不可见字符，最终使用的36874个密码。
-
-
-
-
+1、开始的时候数据生成的不多，内存开销比较大，后来把优先队列的数据改为指针存储，这样可以减小一部分的内存开销，不过使用new、delete容易生成内存碎片，后续可以考虑使用内存池进行优化。
 
