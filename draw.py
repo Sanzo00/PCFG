@@ -1,8 +1,10 @@
 # -*- coding: UTF-8 -*-
 from matplotlib.pyplot import MultipleLocator
+from matplotlib.ticker import FuncFormatter
 import matplotlib.pyplot as plt
 x = []
 y = []
+step = 1000000
 
 def get_XY():
     infile='XY.txt'
@@ -14,16 +16,17 @@ def get_XY():
         y.append(int(tmp[1]))
     f.close()
 
+fig, ax = plt.subplots(figsize=(8,4))
+
+def to_percent(temp, position):
+    return '%d'%(temp//step)
 
 def draw():
-    fig, ax = plt.subplots(figsize=(8,4))
-    len = 1000000
-    ax.set_yticklabels([str(i) for i in range(-200,2000,200)], rotation=0)
-    ax.set_xticklabels([str(i//len) for i in range(-len,10*len,len)], rotation=0)
-
     plt.xlabel('Number of Guesses (Millions)', fontsize=10)
     plt.ylabel('Passwords Cracked', fontsize=10)
     plt.plot(x,y)
+    plt.gca().xaxis.set_major_formatter(FuncFormatter(to_percent))
+    # plt.gca().yaxis.set_major_formatter(FuncFormatter(to_percent))
     plt.show()
 
 get_XY();
